@@ -1,0 +1,117 @@
+---
+title: "Business Intelligence Project"
+author: "Challengers"
+date: "20/10/2023"
+output:
+  github_document: 
+    toc: yes
+    toc_depth: 4
+    fig_width: 6
+    fig_height: 4
+    df_print: default
+editor_options:
+  chunk_output_type: console
+---
+
+# Student Details
+
+|                                              |                                                                              |
+|---------------------------------------------------------|---------------|
+| **Student ID Number**                        | 124255, 120415, 124422, 118211, 124562                                       |
+| **Student Name**                             | Natasha Gichira, Emmanuel Agre, Dennis Muriuki, Fredrick Koech, Ryan Gitonga |
+| **BBIT 4.2 Group**                           | Group C                                                                      |
+| **BI Project Group Name/ID (if applicable)** | Challengers                                                                  |
+
+# Setup Chunk
+
+**Note:** the following KnitR options have been set as the global defaults: <BR> `knitr::opts_chunk$set(echo = TRUE, warning = FALSE, eval = TRUE, collapse = FALSE, tidy = TRUE)`.
+
+More KnitR options are documented here <https://bookdown.org/yihui/rmarkdown-cookbook/chunk-options.html> and here <https://yihui.org/knitr/options/>.
+
+```{r setup, include=FALSE}
+library(formatR)
+knitr::opts_chunk$set(
+  warning = FALSE,
+  collapse = FALSE
+)
+```
+
+# Understanding the Dataset (Exploratory Data Analysis (EDA))
+
+## Loading the Dataset
+
+### Source:
+
+The dataset that was used can be downloaded here: *\<provide a link\>*
+
+### Reference:
+
+*\<Cite the dataset here using APA\>\
+Refer to the APA 7th edition manual for rules on how to cite datasets: <https://apastyle.apa.org/style-grammar-guidelines/references/examples/data-set-references>*
+
+# **DATASET 1: Pima Indians Diabetes - Data Summary and Preprocessing**
+
+```{r}
+if (!is.element("mlbench", installed.packages()[, 1])) {
+  install.packages("mlbench", dependencies = TRUE)
+}
+require("mlbench")
+
+data("PimaIndiansDiabetes")
+summary(PimaIndiansDiabetes)
+```
+
+# **Exploring the Dataset Structure**
+
+```{r}
+str(PimaIndiansDiabetes)
+```
+
+\#**Data Preprocessing: Splitting the Dataset**
+
+```{r}
+library(caret)
+
+train_index <- createDataPartition(PimaIndiansDiabetes$diabetes,
+                                   p = 0.75,
+                                   list = FALSE)
+Pima_Indians_Diabetes_dataset_train <- PimaIndiansDiabetes[train_index, ]
+Pima_Indians_Diabetes_dataset_test <- PimaIndiansDiabetes[-train_index, ]
+
+```
+
+# **Utilizing the naiveBayes() Function in the "e1071" Package**
+
+```{r}
+Pima_Indians_Diabetes_dataset_model_nb_e1071 <- # nolint
+  e1071::naiveBayes(diabetes ~ pregnant + glucose + pressure + triceps + insulin + mass +
+                      pedigree + age,
+                    data = Pima_Indians_Diabetes_dataset_train)
+```
+
+# **Testing the Trained Model on the Testing Dataset**
+
+```{r}
+predictions_nb_e1071 <-
+  predict(Pima_Indians_Diabetes_dataset_model_nb_e1071,
+          Pima_Indians_Diabetes_dataset_test[, c("pregnant", "glucose", "pressure", "triceps",
+                                     "insulin", "mass", "pedigree",
+                                     "age"
+                                     )])
+```
+
+# **Examining the Model Results**
+
+```{r}
+print(predictions_nb_e1071)
+caret::confusionMatrix(predictions_nb_e1071,
+                       Pima_Indians_Diabetes_dataset_test[,c("pregnant", "glucose", "pressure", "triceps",
+                                                             "insulin", "mass", "pedigree",
+                                                             "age", "diabetes")]$diabetes)
+
+plot(table(predictions_nb_e1071,
+           Pima_Indians_Diabetes_dataset_test[,c ("pregnant", "glucose", "pressure", "triceps",
+                                                 "insulin", "mass", "pedigree",
+                                                 "age", "diabetes")]$diabetes))
+
+```
